@@ -110,15 +110,11 @@ class UserControlller{
 
     loadUsers(){
         //let users = User.getUsersStorage();
-        let ajax = new XMLHttpRequest();
-        ajax.open('GET', '/users');
-        ajax.onload = event =>{
-            let users = JSON.parse(ajax.responseText)||[];
+        Ajax.get("/users").then(users =>{
             users.forEach(dataUser =>{
                 this.addLine(new User(Utils.removeUnderline(dataUser)));
             });
-        }
-        ajax.send();
+        });
     }
 
     getValues(formEl){
