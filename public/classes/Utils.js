@@ -11,7 +11,7 @@ class Utils{
         }
         else if(typeof o == 'object'){
             for(let [key, val] of Object.entries(o)){
-                object[key.replace('_','')] = val;
+                if(val!==undefined) object[key.replace('_','')] = val;
             }
             return object;
         }

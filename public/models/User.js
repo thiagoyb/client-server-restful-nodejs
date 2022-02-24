@@ -69,22 +69,29 @@ class User{
         return id;
     }
 
+    toJSON(){
+        return Utils.removeUnderline(this);
+    }
+
     save(){
-        let users = User.getUsersStorage();
+        //let users = User.getUsersStorage();
 
-        if(this.id > 0){
-            users.map(u=>{
-                if(u.id == this.id){
-                    Object.assign(u, Utils.removeUnderline(this));
+        return new Promise((resolve, reject)=>{
+            let promise = this.id > 0 ?
+                Ajax.put(`/users/${this.id}`, this.toJSON()) : Ajax.post(`/users`, this.toJSON());
+
+            promise.then(data=>{
+                for(let [key, val] of Object.entries(data)){
+                    key = key.split('_').join('');
+                    eval(`this._${key} = '${val}';`);
                 }
+
+                resolve(this);
+
+            }).catch(e=>{
+                reject(e);
             });
-
-        } else{
-            this._id = this.getNewId();
-            users.push(Utils.removeUnderline(this));
-        }
-
-        localStorage.setItem('localUsers', JSON.stringify(users));
+        });
     }
 
     remove(){

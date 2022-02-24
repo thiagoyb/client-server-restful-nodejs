@@ -24,21 +24,25 @@ class UserControlller{
             let dataUser = this.getValues(this.formUpdate);
             this.loadPhoto(this.formUpdate).then(uriImage =>{
                 let oldImg = this.formUpdate.querySelector('img.current-photo').src;
-                dataUser.photo = !uriImage ? oldImg : uriImage;
+                dataUser.photo = uriImage!=null ? uriImage : oldImg;
 
                 let tr =  this.tableEl.rows[this.formUpdate.dataset.trIndex];
                 let oldUser = JSON.parse(tr.dataset.user);
                 let curUser = Utils.removeUnderline(dataUser);
                 let newUser = new User(Object.assign({}, oldUser, curUser));
 
-                newUser.save();
-                this.editLine(tr, newUser);
+                newUser.save().then(savedUser=>{
+                    this.editLine(tr, savedUser);
 
-                this.formUpdate.reset();
+                    this.formUpdate.reset();
+    
+                    this.updateStats();
+                    document.querySelector('#box-user-update .btn-cancel').click();
+                }, e =>{
+                    console.error(e);
+                });
+
                 btnSubmit.disabled = false;
-
-                this.updateStats();
-                document.querySelector('#box-user-update .btn-cancel').click();
             }, e =>{
                 console.error(e);
             });
@@ -56,13 +60,16 @@ class UserControlller{
             let values = this.getValues(this.formEl);
             this.loadPhoto(this.formEl).then(uriImage =>{
                 if(values){
-                    values.photo = uriImage;
-                    values.save();
-                    this.addLine(values);
-                }
+                    if(uriImage!=null) values.photo = uriImage;
+                    values.save().then(savedUser=>{
+                        this.addLine(savedUser);
+                        this.formEl.reset();
+                    }, e =>{
+                        console.error(e);
+                    });
 
-                this.formEl.reset();
-                btnSubmit.disabled = false;
+                    btnSubmit.disabled = false;
+                }
             }, e =>{
                 console.error(e);
             });
@@ -88,7 +95,7 @@ class UserControlller{
                 reader.readAsDataURL(photoFile);
             } else{
                 let img = form.id==this.formUpdate.id ? null :'dist/img/boxed-bg.jpg';
-                resolve(img);
+                resolve(null);
             }
         });
     }
@@ -151,7 +158,7 @@ class UserControlller{
 
     editLine(tr, dataUser){
         tr.dataset.user = JSON.stringify(Utils.removeUnderline(dataUser));
-        let userPhoto = eval(dataUser.photo)!=null ? dataUser.photo :'dist/img/boxed-bg.jpg';
+        let userPhoto = dataUser.photo!='null' && dataUser.photo!=null ? dataUser.photo :'dist/img/boxed-bg.jpg';
 
         let isAdmin = eval(dataUser.admin)  ? 'Sim' : 'Não';
         tr.innerHTML = `
