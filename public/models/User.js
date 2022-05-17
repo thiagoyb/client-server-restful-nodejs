@@ -77,7 +77,7 @@ class User{
         //let users = User.getUsersStorage();
 
         return new Promise((resolve, reject)=>{
-            let promise = this.id > 0 ?
+            let promise = this.id ?
                 Ajax.put(`/users/${this.id}`, this.toJSON()) : Ajax.post(`/users`, this.toJSON());
 
             promise.then(data=>{
